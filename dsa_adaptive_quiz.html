@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Structures Master Arena - Adaptive Quiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --bg-card: rgba(18, 26, 43, 0.85);
+      --bg-card-hover: rgba(27, 38, 62, 0.95);
+      --border-color: rgba(99, 102, 241, 0.2);
+      --border-glow: rgba(99, 102, 241, 0.5);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --tier-easy: #10b981;
+      --tier-med: #06b6d4;
+      --tier-hard: #f59e0b;
+      --tier-insane: #ef4444;
+      --tier-legend: #d946ef;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(217, 70, 239, 0.05) 0px, transparent 70%);
+      color: var(--text-main);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 24px 16px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* TOP STATS BAR */
+    .header-bar {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .title-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .app-icon {
+      font-size: 28px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      box-shadow: 0 0 18px rgba(99, 102, 241, 0.5);
+    }
+
+    .title-area h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-area p {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .stats-group {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .stat-pill {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 16px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 80px;
+    }
+
+    .stat-pill .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-pill .value {
+      font-size: 18px;
+      font-weight: 800;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .stat-score .value { color: var(--accent); }
+    .stat-streak .value { color: var(--warning); }
+    .stat-lives .value { color: var(--error); letter-spacing: 2px; }
+
+    /* PROGRESS & INTENSITY BAR */
+    .progress-section {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tier-badge {
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .badge-easy { background: rgba(16, 185, 129, 0.15); color: var(--tier-easy); border: 1px solid var(--tier-easy); }
+    .badge-medium { background: rgba(6, 182, 212, 0.15); color: var(--tier-med); border: 1px solid var(--tier-med); }
+    .badge-hard { background: rgba(245, 158, 11, 0.15); color: var(--tier-hard); border: 1px solid var(--tier-hard); }
+    .badge-insane { background: rgba(239, 68, 68, 0.15); color: var(--tier-insane); border: 1px solid var(--tier-insane); }
+    .badge-legend { background: rgba(217, 70, 239, 0.15); color: var(--tier-legend); border: 1px solid var(--tier-legend); box-shadow: 0 0 10px rgba(217, 70, 239, 0.3); }
+
+    .intensity-container {
+      width: 100%;
+      height: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .intensity-fill {
+      height: 100%;
+      width: 10%;
+      background: linear-gradient(90deg, #10b981, #06b6d4, #f59e0b, #ef4444, #d946ef);
+      background-size: 500% 100%;
+      border-radius: 999px;
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* CARD DISPLAY */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.3s ease;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .topic-tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .timer-ring {
+      font-family: 'Fira Code', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+
+    .timer-ring.pulse {
+      color: var(--error);
+      animation: heartBeat 1s infinite;
+    }
+
+    @keyframes heartBeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .question-title {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.5;
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+
+    /* CODE SNIPPET / DIAGRAM AREA */
+    .code-box {
+      background: #060911;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #38bdf8;
+      overflow-x: auto;
+      margin-bottom: 24px;
+      position: relative;
+      white-space: pre-wrap;
+    }
+
+    /* INTERACTIVE DIAGRAMS */
+    .diagram-area {
+      background: rgba(11, 17, 30, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 120px;
+    }
+
+    .array-cells {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 10px;
+    }
+
+    .array-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .array-val {
+      width: 48px;
+      height: 48px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1.5px solid var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fira Code', monospace;
+      font-weight: 700;
+      font-size: 16px;
+      color: #ffffff;
+    }
+
+    .array-idx {
+      font-size: 11px;
+      font-family: 'Fira Code', monospace;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* OPTIONS GRID */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .options-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .option-btn {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 14.5px;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px -4px rgba(99, 102, 241, 0.3);
+    }
+
+    .option-key {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .option-text {
+      flex: 1;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+
+    .option-btn.correct {
+      background: rgba(16, 185, 129, 0.2) !important;
+      border-color: var(--success) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .option-btn.wrong {
+      background: rgba(239, 68, 68, 0.2) !important;
+      border-color: var(--error) !important;
+      color: #ffffff !important;
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* EXPLANATION ACCORDION */
+    .explanation-panel {
+      margin-top: 20px;
+      padding: 18px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 12px;
+      border-left: 4px solid var(--primary);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .explanation-title {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .explanation-text {
+      font-size: 13.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .action-bar {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .next-btn {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+
+    .next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.6);
+    }
+
+    /* GAME OVER / VICTORY MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(5, 8, 15, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 24px;
+      max-width: 500px;
+      width: 100%;
+      padding: 36px;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      animation: scaleUp 0.3s ease;
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-icon {
+      font-size: 54px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .modal-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .modal-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .modal-stat-box {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .modal-stat-box .title {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .modal-stat-box .num {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: 'Fira Code', monospace;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+
+    .restart-btn {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+
+    .restart-btn:hover {
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+    }
+
+    /* SOUND & HINT TOGGLES */
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 0 4px;
+    }
+
+    .toggle-btn {
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER STATS -->
+    <header class="header-bar">
+      <div class="title-area">
+        <div class="app-icon">⚡</div>
+        <div>
+          <h1>DSA Adaptive Arena</h1>
+          <p>Master Data Structures with Dynamic Question Intensity</p>
+        </div>
+      </div>
+      <div class="stats-group">
+        <div class="stat-pill stat-score">
+          <span class="label">Score</span>
+          <span class="value" id="score-val">0</span>
+        </div>
+        <div class="stat-pill stat-streak">
+          <span class="label">Streak</span>
+          <span class="value" id="streak-val">🔥 0</span>
+        </div>
+        <div class="stat-pill stat-lives">
+          <span class="label">Lives</span>
+          <span class="value" id="lives-val">❤️❤️❤️</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- INTENSITY PROGRESS -->
+    <section class="progress-section">
+      <div class="progress-meta">
+        <span id="tier-badge" class="tier-badge badge-easy">Level 1: Novice (Easy)</span>
+        <span id="q-counter" style="color: var(--text-muted); font-family: 'Fira Code', monospace;">Question 1 / 15</span>
+      </div>
+      <div class="intensity-container">
+        <div class="intensity-fill" id="intensity-meter"></div>
+      </div>
+    </section>
+
+    <!-- MAIN QUIZ CARD -->
+    <main class="card" id="quiz-card">
+      <div class="card-top">
+        <span class="topic-tag" id="topic-tag">Array & Memory</span>
+        <div class="timer-ring" id="timer-box">
+          <span>⏱️</span>
+          <span id="timer-val">25s</span>
+        </div>
+      </div>
+
+      <h2 class="question-title" id="question-text">Loading dynamic question...</h2>
+
+      <!-- Visual or Code Area (populated dynamically) -->
+      <div id="visual-container"></div>
+
+      <!-- MCQ Options -->
+      <div class="options-grid" id="options-box"></div>
+
+      <!-- Explanation Panel -->
+      <div class="explanation-panel" id="explanation-box">
+        <div class="explanation-title" id="explanation-title">💡 Explanation & Complexity</div>
+        <p class="explanation-text" id="explanation-text"></p>
+      </div>
+
+      <div class="action-bar" id="action-bar" style="display: none;">
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Challenge →</button>
+      </div>
+    </main>
+
+    <!-- AUXILIARY BAR -->
+    <footer class="controls-bar">
+      <span>Adaptive Algorithm: Correct answers scale up difficulty (+multiplier)</span>
+      <div style="display: flex; gap: 8px;">
+        <button class="toggle-btn" id="sound-btn" onclick="toggleSound()">🔊 Sound: ON</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- GAME OVER / FINISH MODAL -->
+  <div class="modal-overlay" id="end-modal">
+    <div class="modal-card">
+      <div class="modal-icon" id="modal-emoji">🏆</div>
+      <h2 class="modal-title" id="modal-heading">Challenge Complete!</h2>
+      <p class="modal-desc" id="modal-subtitle">You have demonstrated high proficiency across foundational and complex data structures.</p>
+      
+      <div class="modal-stats">
+        <div class="modal-stat-box">
+          <div class="title">Final Score</div>
+          <div class="num" id="modal-score">0</div>
+        </div>
+        <div class="modal-stat-box">
+          <div class="title">Max Streak</div>
+          <div class="num" id="modal-streak">0</div>
+        </div>
+        <div class="modal-stat-box">
+          <div class="title">Peak Intensity</div>
+          <div class="num" id="modal-tier">Tier 1</div>
+        </div>
+        <div class="modal-stat-box">
+          <div class="title">Accuracy</div>
+          <div class="num" id="modal-acc">0%</div>
+        </div>
+      </div>
+
+      <button class="restart-btn" onclick="restartQuiz()">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------
+    // AUDIO ENGINE (Web Audio API Synthesizer)
+    // -------------------------------------------------------------
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+      }
+      playCorrect() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, now); // A4
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+      playWrong() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(190, now);
+        osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+      playLevelUp() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+
+          gain.gain.setValueAtTime(0.15, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.25);
+        });
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    function toggleSound() {
+      sound.enabled = !sound.enabled;
+      document.getElementById('sound-btn').innerText = sound.enabled ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+    }
+
+    // -------------------------------------------------------------
+    // CURATED DATA STRUCTURE QUESTIONS (RANKED BY DIFFICULTY TIER 1 TO 5)
+    // -------------------------------------------------------------
+    const QUESTION_BANK = [
+      // TIER 1: EASY / NOVICE
+      {
+        id: 1,
+        tier: 1,
+        topic: "Array & Complexity",
+        question: "What is the worst-case time complexity of accessing an element in an array by index?",
+        code: `int val = arr[4]; // Given direct memory base address & index`,
+        options: ["O(1)", "O(n)", "O(log n)", "O(n²)"],
+        answer: 0,
+        explanation: "Arrays offer O(1) random access because the memory address is calculated instantly using address = base_address + (index * element_size)."
+      },
+      {
+        id: 2,
+        tier: 1,
+        topic: "Stack Structure",
+        question: "Which algorithmic principle governs the insertion and removal order in a standard Stack?",
+        code: `push(10) -> push(20) -> pop()`,
+        options: ["FIFO (First In, First Out)", "LIFO (Last In, First Out)", "Priority Based", "Random Access"],
+        answer: 1,
+        explanation: "A Stack is strictly a LIFO (Last-In, First-Out) structure. The most recently pushed item is the first one removed via pop()."
+      },
+      {
+        id: 3,
+        tier: 1,
+        topic: "Queue Structure",
+        question: "In a standard FIFO Queue implemented with two pointers (front & rear), where do insertions occur?",
+        code: `queue.enqueue(value);`,
+        options: ["At the front", "At the rear", "At a random slot", "In the exact middle"],
+        answer: 1,
+        explanation: "In a typical Queue, elements are inserted (enqueued) at the rear and removed (dequeued) from the front."
+      },
+
+      // TIER 2: MEDIUM
+      {
+        id: 4,
+        tier: 2,
+        topic: "Binary Search Tree",
+        question: "What is the result of performing an IN-ORDER traversal on any valid Binary Search Tree (BST)?",
+        code: `// Traversal: Left -> Root -> Right
+void inOrder(Node* root) {
+  if(!root) return;
+  inOrder(root->left);
+  print(root->val);
+  inOrder(root->right);
+}`,
+        options: [
+          "Elements in reverse descending order",
+          "Elements in strictly ascending sorted order",
+          "Elements grouped by their depth/level",
+          "The exact preorder sequence"
+        ],
+        answer: 1,
+        explanation: "Because BST properties mandate left < root < right, an in-order (LNR) traversal always yields node keys in strictly ascending sorted order."
+      },
+      {
+        id: 5,
+        tier: 2,
+        topic: "Singly Linked List",
+        question: "Given only a pointer to the head of a Singly Linked List without a tail pointer, what is the time complexity to insert a new node at the end?",
+        code: `struct Node { int val; Node* next; };
+// Head known, tail unknown`,
+        options: ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+        answer: 2,
+        explanation: "Without keeping a tail pointer, you must traverse all n nodes from head to the last node (next == null), which requires O(n) steps."
+      },
+      {
+        id: 6,
+        tier: 2,
+        topic: "Hash Table & Collisions",
+        question: "What is the expected average-case lookup time in a Hash Table with good uniform hashing and load factor < 0.7?",
+        code: `table.get("user_session_token");`,
+        options: ["O(log n)", "O(1)", "O(n)", "O(n log n)"],
+        answer: 1,
+        explanation: "Under uniform distribution, the hash function computes the bucket index immediately, giving an average lookup time of O(1)."
+      },
+
+      // TIER 3: HARD / ADVANCED
+      {
+        id: 7,
+        tier: 3,
+        topic: "Binary Heap / Priority Queue",
+        question: "When building a Binary Heap of N elements from an unsorted array, what is the time complexity of Floyd's Bottom-Up buildHeap algorithm?",
+        code: `for (int i = n/2 - 1; i >= 0; i--) {
+    siftDown(arr, n, i);
+}`,
+        options: ["O(N log N)", "O(N)", "O(log N)", "O(N²)"],
+        answer: 1,
+        explanation: "Floyd's bottom-up heap construction runs in linear O(N) time. The summation of node heights across all levels converges to O(N), unlike sequential inserts which take O(N log N)."
+      },
+      {
+        id: 8,
+        tier: 3,
+        topic: "AVL Trees & Balance",
+        question: "In an AVL tree, a node becomes unbalanced with balance factor +2 and its left child has balance factor -1. Which rotations restore balance?",
+        code: `    (Node) [+2]
+    /
+ (Left) [-1]
+    \
+   (Subtree)`,
+        options: ["Single Right Rotation", "Left-Right (LR) Double Rotation", "Single Left Rotation", "Right-Left (RL) Double Rotation"],
+        answer: 1,
+        explanation: "A Left-Right (LR) condition occurs when the parent has +2 balance and the left child has -1. First perform a Left rotation on the child, followed by a Right rotation on the parent."
+      },
+      {
+        id: 9,
+        tier: 3,
+        topic: "Disjoint Set Union (DSU)",
+        question: "What is the amortized time complexity per operation in DSU with both Path Compression and Union by Rank?",
+        code: `int find(int x) {
+    if (parent[x] == x) return x;
+    return parent[x] = find(parent[x]); // Path compression
+}`,
+        options: ["O(1)", "O(α(N)) - Inverse Ackermann", "O(log N)", "O(√N)"],
+        answer: 1,
+        explanation: "Combining Path Compression with Union by Rank achieves an amortized per-operation complexity of O(α(N)), where α is the inverse Ackermann function (effectively ≤ 4 for all practical universe sizes)."
+      },
+
+      // TIER 4: INSANE / EXPERT
+      {
+        id: 10,
+        tier: 4,
+        topic: "Red-Black Trees",
+        question: "During insertion into a Red-Black Tree, if the newly inserted node's parent is RED and its parent's sibling (uncle) is ALSO RED, what operation is performed?",
+        code: `    GrandParent [B]
+       /        \
+  Parent [R]     Uncle [R]
+    /
+  Node [R]`,
+        options: [
+          "Single Left-Right rotation without color changes",
+          "Recolor Parent & Uncle to BLACK, Grandparent to RED, then continue upward",
+          "Double rotate Grandparent immediately",
+          "Throw an illegal state exception"
+        ],
+        answer: 1,
+        explanation: "When the uncle is RED (Case 1), recolor both Parent and Uncle to BLACK, recolor Grandparent to RED, and shift the balance pointer to Grandparent to verify violations higher up."
+      },
+      {
+        id: 11,
+        tier: 4,
+        topic: "Trie & Radix Trees",
+        question: "Given a compressed Trie (Patricia Tree) containing N unique keys of maximum length L over alphabet size Σ, what is the maximum number of internal nodes?",
+        code: `// Nodes with single children are merged with parents`,
+        options: ["N - 1", "N * L", "Σ^L", "2^N"],
+        answer: 0,
+        explanation: "In a radix/compressed trie, every internal node must have at least two children. A tree with N leaves where each branching node has degree ≥ 2 can contain at most N - 1 internal branching nodes."
+      },
+      {
+        id: 12,
+        tier: 4,
+        topic: "B-Trees & Database Indexing",
+        question: "In a B-Tree of order M (where M is maximum children per node), what is the minimum number of keys allowed in any non-root internal node?",
+        code: `// Order M definition (Knuth)`,
+        options: ["⌈M / 2⌉ - 1", "M / 2", "M - 1", "2"],
+        answer: 0,
+        explanation: "According to standard Knuth convention, every internal node except the root has at least ⌈M/2⌉ children, which corresponds to at least ⌈M/2⌉ - 1 keys."
+      },
+
+      // TIER 5: LEGENDARY / MASTER
+      {
+        id: 13,
+        tier: 5,
+        topic: "Fibonacci Heap",
+        question: "What is the amortized time complexity of the decrease-key operation in a Fibonacci Heap?",
+        code: `fibHeap.decreaseKey(nodePtr, newLowerValue);`,
+        options: ["O(log N)", "O(1)", "O(α(N))", "O(log* N)"],
+        answer: 1,
+        explanation: "Fibonacci Heaps achieve O(1) amortized decrease-key by cascading cuts: the node is simply cut and moved to the root list unless its parent has already lost another child."
+      },
+      {
+        id: 14,
+        tier: 5,
+        topic: "Segment Trees with Lazy Propagation",
+        question: "When applying range updates and range queries on a Segment Tree with Lazy Propagation over N elements, what is the time complexity per query?",
+        code: `void updateRange(int node, int start, int end, int l, int r, int val) {
+    if (lazy[node] != 0) pushDown(node);
+    // ...
+}`,
+        options: ["O(log N)", "O(N)", "O(1)", "O(√N)"],
+        answer: 0,
+        explanation: "Lazy propagation ensures that pending updates are only pushed down to children along the O(log N) tree path actually accessed by the query, maintaining strict O(log N) per operation."
+      },
+      {
+        id: 15,
+        tier: 5,
+        topic: "Treap (Cartesian Tree)",
+        question: "A Treap maintains two invariant properties simultaneously. Which combination accurately describes them?",
+        code: `struct TreapNode {
+    int key;      // BST property
+    int priority; // Heap property
+};`,
+        options: [
+          "Keys satisfy In-Order BST property; Random Priorities satisfy Max/Min Heap property",
+          "Keys satisfy FIFO Queue property; Priorities satisfy Hash property",
+          "Keys satisfy Min-Heap; Priorities satisfy AVL balance heights",
+          "Both Keys and Priorities must strictly satisfy Red-Black invariants"
+        ],
+        answer: 0,
+        explanation: "A Treap (Tree + Heap) holds the Binary Search Tree invariant on its search keys and the Heap order invariant on its randomized priorities, guaranteeing O(log N) expected tree height."
+      }
+    ];
+
+    // -------------------------------------------------------------
+    // GAME STATE & ADAPTIVE INTENSITY ENGINE
+    // -------------------------------------------------------------
+    let state = {
+      score: 0,
+      streak: 0,
+      maxStreak: 0,
+      lives: 3,
+      currentIntensity: 1, // 1 to 5
+      questionIndex: 0,
+      totalAnswered: 0,
+      correctCount: 0,
+      currentQuestion: null,
+      timer: 25,
+      timerInterval: null,
+      selected: false
+    };
+
+    const TIER_METADATA = {
+      1: { name: "Novice (Easy)", class: "badge-easy", basePoints: 100, timer: 25 },
+      2: { name: "Apprentice (Medium)", class: "badge-medium", basePoints: 200, timer: 22 },
+      3: { name: "Architect (Hard)", class: "badge-hard", basePoints: 350, timer: 20 },
+      4: { name: "Master (Insane)", class: "badge-insane", basePoints: 500, timer: 18 },
+      5: { name: "Grandmaster (Legendary)", class: "badge-legend", basePoints: 750, timer: 15 }
+    };
+
+    // Pick question based on current intensity
+    function getNextQuestion() {
+      // Find questions matching current tier
+      const candidateList = QUESTION_BANK.filter(q => q.tier === state.currentIntensity);
+      // Fallback if none left at tier
+      if (candidateList.length === 0) {
+        return QUESTION_BANK[Math.floor(Math.random() * QUESTION_BANK.length)];
+      }
+      return candidateList[Math.floor(Math.random() * candidateList.length)];
+    }
+
+    function renderUI() {
+      document.getElementById('score-val').innerText = state.score.toLocaleString();
+      document.getElementById('streak-val').innerText = `🔥 ${state.streak}`;
+      document.getElementById('lives-val').innerText = "❤️".repeat(Math.max(0, state.lives)) || "💀";
+
+      // Intensity meter width (1 to 5 maps to 20% to 100%)
+      const meterWidth = (state.currentIntensity / 5) * 100;
+      document.getElementById('intensity-meter').style.width = `${meterWidth}%`;
+
+      const tierInfo = TIER_METADATA[state.currentIntensity];
+      const tierBadge = document.getElementById('tier-badge');
+      tierBadge.className = `tier-badge ${tierInfo.class}`;
+      tierBadge.innerText = `Level ${state.currentIntensity}: ${tierInfo.name}`;
+
+      document.getElementById('q-counter').innerText = `Question ${state.questionIndex + 1} / 15`;
+    }
+
+    function loadQuestion() {
+      state.selected = false;
+      state.questionIndex++;
+
+      if (state.questionIndex > 15 || state.lives <= 0) {
+        endGame();
+        return;
+      }
+
+      state.currentQuestion = getNextQuestion();
+      const q = state.currentQuestion;
+
+      document.getElementById('topic-tag').innerText = q.topic;
+      document.getElementById('question-text').innerText = q.question;
+      document.getElementById('explanation-box').style.display = 'none';
+      document.getElementById('action-bar').style.display = 'none';
+
+      // Visual / code box
+      const visualArea = document.getElementById('visual-container');
+      if (q.code) {
+        visualArea.innerHTML = `<div class="code-box">${escapeHtml(q.code)}</div>`;
+      } else {
+        visualArea.innerHTML = '';
+      }
+
+      // Render options
+      const optContainer = document.getElementById('options-box');
+      optContainer.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+      
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.id = `opt-${idx}`;
+        btn.innerHTML = `
+          <span class="option-key">${letters[idx]}</span>
+          <span class="option-text">${escapeHtml(opt)}</span>
+        `;
+        btn.onclick = () => handleAnswer(idx);
+        optContainer.appendChild(btn);
+      });
+
+      renderUI();
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(state.timerInterval);
+      const tierTime = TIER_METADATA[state.currentIntensity].timer;
+      state.timer = tierTime;
+      updateTimerDisplay();
+
+      state.timerInterval = setInterval(() => {
+        state.timer--;
+        updateTimerDisplay();
+
+        if (state.timer <= 0) {
+          clearInterval(state.timerInterval);
+          handleTimeOut();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const timerBox = document.getElementById('timer-box');
+      const timerVal = document.getElementById('timer-val');
+      timerVal.innerText = `${state.timer}s`;
+
+      if (state.timer <= 5) {
+        timerBox.classList.add('pulse');
+      } else {
+        timerBox.classList.remove('pulse');
+      }
+    }
+
+    function handleAnswer(selectedIndex) {
+      if (state.selected) return;
+      state.selected = true;
+      clearInterval(state.timerInterval);
+
+      const q = state.currentQuestion;
+      const isCorrect = selectedIndex === q.answer;
+      state.totalAnswered++;
+
+      const selectedBtn = document.getElementById(`opt-${selectedIndex}`);
+      const correctBtn = document.getElementById(`opt-${q.answer}`);
+
+      // Disable all options
+      document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+
+      if (isCorrect) {
+        selectedBtn.classList.add('correct');
+        sound.playCorrect();
+        state.correctCount++;
+        state.streak++;
+        if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+
+        // Points calculation with streak multiplier & difficulty
+        const tierPoints = TIER_METADATA[state.currentIntensity].basePoints;
+        const multiplier = 1 + (state.streak * 0.15);
+        const earned = Math.round(tierPoints * multiplier);
+        state.score += earned;
+
+        // INTENSITY ADAPTATION (Level Up when streak reaches thresholds)
+        if (state.streak % 2 === 0 && state.currentIntensity < 5) {
+          state.currentIntensity++;
+          sound.playLevelUp();
+        }
+      } else {
+        if (selectedBtn) selectedBtn.classList.add('wrong');
+        correctBtn.classList.add('correct');
+        sound.playWrong();
+        state.streak = 0;
+        state.lives--;
+
+        // If wrong at higher tiers, gently de-escalate intensity
+        if (state.currentIntensity > 1) {
+          state.currentIntensity--;
+        }
+      }
+
+      // Show explanation
+      const expBox = document.getElementById('explanation-box');
+      const expTitle = document.getElementById('explanation-title');
+      const expText = document.getElementById('explanation-text');
+
+      expTitle.innerHTML = isCorrect ? "✅ Correct! Analysis & Rationale:" : "❌ Incorrect. Correct Solution Analysis:";
+      expTitle.style.color = isCorrect ? "var(--success)" : "var(--error)";
+      expText.innerText = q.explanation;
+      expBox.style.display = 'block';
+
+      renderUI();
+
+      if (state.lives <= 0) {
+        setTimeout(endGame, 1500);
+      } else {
+        document.getElementById('action-bar').style.display = 'flex';
+      }
+    }
+
+    function handleTimeOut() {
+      if (state.selected) return;
+      handleAnswer(-1); // Treat as wrong answer
+    }
+
+    function nextQuestion() {
+      loadQuestion();
+    }
+
+    function endGame() {
+      clearInterval(state.timerInterval);
+      const modal = document.getElementById('end-modal');
+      const isWon = state.lives > 0;
+
+      document.getElementById('modal-emoji').innerText = isWon ? "👑" : "💀";
+      document.getElementById('modal-heading').innerText = isWon ? "Mastery Achieved!" : "System Crash (Out of Lives)";
+      document.getElementById('modal-subtitle').innerText = isWon 
+        ? "Impressive! You navigated high-intensity data structure challenges with tactical algorithmic accuracy."
+        : "You ran out of lives against intense DSA questions. Analyze the insights and try again!";
+
+      document.getElementById('modal-score').innerText = state.score.toLocaleString();
+      document.getElementById('modal-streak').innerText = `${state.maxStreak} in a row`;
+      document.getElementById('modal-tier').innerText = `Tier ${state.currentIntensity}`;
+      
+      const acc = state.totalAnswered > 0 ? Math.round((state.correctCount / state.totalAnswered) * 100) : 0;
+      document.getElementById('modal-acc').innerText = `${acc}%`;
+
+      modal.style.display = 'flex';
+    }
+
+    function restartQuiz() {
+      document.getElementById('end-modal').style.display = 'none';
+      state = {
+        score: 0,
+        streak: 0,
+        maxStreak: 0,
+        lives: 3,
+        currentIntensity: 1,
+        questionIndex: 0,
+        totalAnswered: 0,
+        correctCount: 0,
+        currentQuestion: null,
+        timer: 25,
+        timerInterval: null,
+        selected: false
+      };
+      loadQuestion();
+    }
+
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Initialize quiz on load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadQuestion();
+    });
+  </script>
+</body>
+</html>
